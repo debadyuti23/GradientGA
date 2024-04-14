@@ -53,8 +53,6 @@ def main():
     elif args.method == "synnet":
         from main.synnet.run import SynNet_Optimizer as Optimizer
     elif args.method == 'hebo':
-        from main.hebo.run import HEBO_Optimizer as Optimizer 
-    elif args.method == 'graph_mcts':
         from main.graph_mcts.run import Graph_MCTS_Optimizer as Optimizer
     elif args.method == 'smiles_ahc':
         from main.smiles_ahc.run import AHC_Optimizer as Optimizer
@@ -68,13 +66,6 @@ def main():
         from main.selfies_lstm_hc.run import SELFIES_LSTM_HC_Optimizer as Optimizer
     elif args.method == 'dog_gen':
         from main.dog_gen.run import DoG_Gen_Optimizer as Optimizer
-    elif args.method == 'gegl':
-        from main.gegl.run import GEGL_Optimizer as Optimizer 
-    elif args.method == 'boss':
-        from main.boss.run import BOSS_Optimizer as Optimizer
-    elif args.method == 'chembo':
-        from main.chembo.run import ChemBOoptimizer as Optimizer 
-    elif args.method == 'gpbo':
         from main.gpbo.run import GPBO_Optimizer as Optimizer
     elif args.method == 'stoned': 
         from main.stoned.run import Stoned_Optimizer as Optimizer
@@ -108,8 +99,8 @@ def main():
         from main.reinvent_selfies.run import REINVENT_SELFIES_Optimizer as Optimizer
     elif args.method == 'graphinvent':
         from main.graphinvent.run import GraphInvent_Optimizer as Optimizer
-    elif args.method == "rationale_rl":
-        from main.rationale_rl.run import Rationale_RL_Optimizer as Optimizer
+    elif args.method == 'edited_graph_ga':
+        from main.edited_graph_ga.run import Edited_GA_Optimizer as Optimizer
     else:
         raise ValueError("Unrecognized method name.")
 
