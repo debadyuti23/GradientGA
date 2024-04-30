@@ -12,6 +12,12 @@ rdBase.DisableLog('rdApp.error')
 
 import main.edited_graph_ga.crossover as co, main.edited_graph_ga.mutate as mu
 from main.optimizer import BaseOptimizer
+from dgl import MPNN
+from mars.common.chem import mol_to_dgl
+from torch.utils.data import DataLoader
+from torch.optim import Adam
+import torch.nn as nn
+from dgl import GraphDataset,Discriminator
 
 
 MINIMUM = 1e-10
@@ -97,6 +103,29 @@ class Edited_GA_Optimizer(BaseOptimizer):
         population_mol = [Chem.MolFromSmiles(s) for s in population_smiles]
         population_scores = self.oracle([Chem.MolToSmiles(mol) for mol in population_mol])
 
+        #Model training
+        print('----------------------Training model with sample population-----------------')
+        graphs = [mol_to_dgl(s) for s in population_mol] #change popluation to dgl graph objects
+        dataset = GraphDataset(graphs,population_scores)
+        loader = DataLoader(dataset, 
+            batch_size=self.batch_size, 
+            collate_fn=GraphDataset.collate_fn)
+        
+        optim = Adam(model.parameters())
+        criterion = nn.MSELoss()
+        model = Discriminator()
+
+        for i in range(100):
+            for graphs, targs in loader:
+                optim.zero_grad()
+                preds = model(graphs)
+                loss = criterion(preds,targs)
+                loss.backward()
+                optim.step()
+            print('Epoch {} Loss {}'.format(i,loss.item()))
+
+        print('----------------------Training completed-----------------')
+
         patience = 0
 
         while True:
@@ -110,8 +139,10 @@ class Edited_GA_Optimizer(BaseOptimizer):
             # new_population
             mating_pool = make_mating_pool(population_mol, population_scores, config["population_size"])
             #offspring_mol = pool(delayed(reproduce)(mating_pool, config['mutation_rate']) for _ in range(config['offspring_size']))
+            parent_graphs = [mol_to_dgl(s) for s in mating_pool]
 
             offspring_mol = reproduce2(mating_pool, config["mutation_rate"])
+            offspring_graphs = [mol_to_dgl(s) for s in offspring_mol]
 
             # Get dict with each possible child from a sample of 1000 crossovers and generate a dict of each child and their frequency
             #offspring_dict = reproduce_child_dist(mating_pool, config["mutation_rate"])

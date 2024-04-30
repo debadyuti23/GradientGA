@@ -7,14 +7,15 @@ from dgl.nn.pytorch.conv import NNConv
 from torch.utils import data
 
 class GraphDataset(data.Dataset):
-    def __init__(self, graphs):
+    def __init__(self, graphs, scores):
         self.graphs = graphs
+        self.scores = scores
 
     def __len__(self):
         return len(self.graphs)
 
     def __getitem__(self, index):
-        return self.graphs[index]
+        return self.graphs[index], self.scores[index]
 
     @staticmethod
     def collate_fn(batch):
