@@ -244,76 +244,36 @@ def reproduce_dlp(model, parent_a, parent_b, child, mutation_rate, device, oracl
 
 
 def get_dlp_proba(parent_emb,parent_grad,children_emb,alpha=1.0):
-  #parent_emb: 1xvector_length
-  #parent grad: 1xvector_length
-  #children_emb: children_sizexvector_length
-  #print("PARENT GRAD INFO: ",parent_grad)
   children_size = children_emb.shape[0]
-  #print("sample space--> ",children_size)
   diffs = children_emb-(parent_emb+0.5*alpha*parent_grad).repeat(children_size,1)
-  #print("diff shape--> ",diffs.shape)
   nlog_probas = torch.norm(diffs,dim=1)**2
-  #print("sq norm shape--> ",nlog_probas)
   probas = torch.exp(-0.5*nlog_probas/alpha)
-  #top100_probas, top100_indices = torch.topk(probas, 100)
-  #probas = top100_probas
   probas = probas/torch.sum(probas)
-  #print("proba shape--> ",probas)
-  #print("final probability: ",probas)
-  #print("Maximum proba: {} Minimum proba: {}".format(torch.max(probas).item(), torch.min(probas).item()))
-  #return probas, top100_indices
   return probas
 
 def get_dlp_proba_one(parent_emb,parent_grad,child_emb,alpha=1.0):
-  #parent_emb: 1xvector_length
-  #parent grad: 1xvector_length
-  #children_emb: children_sizexvector_length
-  #print("PARENT GRAD INFO: ",parent_grad)
-  #children_size = child_emb.shape[0]
-  #print("sample space--> ",children_size)
   diff = child_emb-(parent_emb+0.5*alpha*parent_grad)
-  #print("diff shape--> ",diffs.shape)
   logit = torch.norm(diff,dim=1)**2
-  #print("sq norm shape--> ",nlog_probas)
   proba = torch.exp(-0.5*logit/alpha)
-  #top100_probas, top100_indices = torch.topk(probas, 100)
-  #probas = top100_probas
-  #probas = probas/torch.sum(probas)
-  #print("proba shape--> ",probas)
-  #print("final probability: ",probas)
-  #print("Maximum proba: {} Minimum proba: {}".format(torch.max(probas).item(), torch.min(probas).item()))
-  #return probas, top100_indices
   return proba
 
 def get_dlp_proba_avg_from_mating_pool(parents_emb,parents_grad,children_emb,alpha=1.0):
   avg_parent_emb = torch.mean(parents_emb,0).unsqueeze(0)
   avg_parent_grad = torch.mean(parents_grad,0).unsqueeze(0)
-  #print("AVG PARENT EMB SHAPE---> ",avg_parent_emb.shape)
-  #print("AVG PARENT GRAD SHAPE--> ", avg_parent_grad.shape)
   return get_dlp_proba(avg_parent_emb, avg_parent_grad, children_emb, alpha)
 
 def get_dlp_proba_max_from_mating_pool(parents_emb,parents_grad,max_index, children_emb,alpha=1.0):
-  #avg_parent_emb = torch.mean(parents_emb,0).unsqueeze(0)
-  #avg_parent_grad = torch.mean(parents_grad,0).unsqueeze(0)
   max_emb = parents_emb[max_index]
   max_grad = parents_grad[max_index]
-  #print("MAX EMBEDDING SHAPE: ", max_emb.shape)
-  #print("MAX GRAD SHAPE: ", max_grad.shape)
-  #print(avg_parent_emb,avg_parent_grad,max_emb,max_grad,sep='\n')
   return get_dlp_proba(max_emb, max_grad, children_emb, alpha)
 
 def get_dlp_proba_max_from_mating_pool(parents_emb,parents_grad,max_index, children_emb,alpha=1.0):
-  #avg_parent_emb = torch.mean(parents_emb,0).unsqueeze(0)
-  #avg_parent_grad = torch.mean(parents_grad,0).unsqueeze(0)
   max_emb = parents_emb[max_index]
   max_grad = parents_grad[max_index]
-  #print("MAX EMBEDDING SHAPE: ", max_emb.shape)
-  #print("MAX GRAD SHAPE: ", max_grad.shape)
-  #print(avg_parent_emb,avg_parent_grad,max_emb,max_grad,sep='\n')
   return get_dlp_proba(max_emb, max_grad, children_emb, alpha)
 
 def print_results(t,a,b,x):
-    directory = f"C:/Users/chris/molecule_benchmark/mol_opt/results/oracle/{t}/{a}"
+    directory = 
     file_path = os.path.join(directory, f'{b}.csv')
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -324,7 +284,7 @@ def print_results(t,a,b,x):
         writer.writerow(x)
     print(f"File saved at: {file_path}")
 def print_results_oracle(t,a,b,x):
-    directory = f"C:/Users/chris/molecule_benchmark/mol_opt/results/oracle/{t}/{a}"
+    directory = 
     file_path = os.path.join(directory, f'{b}.csv')
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -335,11 +295,11 @@ def print_results_oracle(t,a,b,x):
         writer.writerow(x)
     print(f"File appended at: {file_path}")
 
-class GA_DLP_Optimizer(BaseOptimizer):
+class Gradient_GA_Optimizer(BaseOptimizer):
 
     def __init__(self, args=None):
         super().__init__(args)
-        self.model_name = "dlp_graph_ga"
+        self.model_name = "gradient_ga"
         self.device = 'cuda' if torch.cuda.is_available() else "cpu"
     def scores_from_dicts(self, dicts):
         '''
@@ -349,49 +309,38 @@ class GA_DLP_Optimizer(BaseOptimizer):
             scores (list): sum of property scores of each molecule after clipping
         '''
         scores = []
-        # score_norm = sum(self.score_wght.values())
         for score_dict in dicts:
             score = 0.
             for k, v in score_dict.items():
                 score += v 
-            # score /= score_norm
             score = max(score, 0.)
             scores.append(score)
         return scores
     
     def train(self, population_mol, model, criterion, optim, print_logs = False):
-        graphs = [mol_to_dgl(s) for s in population_mol] #change popluation to dgl graph objects
+        graphs = [mol_to_dgl(s) for s in population_mol]
 
         population_smiles = [Chem.MolToSmiles(mol) for mol in population_mol]
         population_scores = [float(self.oracle.evaluator(smi)) for smi in population_smiles]
         log_scores = torch.tensor(population_scores)
 
         dataset = GraphDataset(graphs,log_scores,self.device)
-          #loader = DataLoader(dataset, 
-          #    batch_size=self.batch_size, 
-          #    collate_fn=GraphDataset.collate_fn)
 
         loader = DataLoader(dataset, 
-              batch_size=32 if len(population_mol)%32 != 1 else 31, #make sure that the batch does not cause a error with batch norm
+              batch_size=32 if len(population_mol)%32 != 1 else 31, 
               collate_fn=GraphDataset.collate_fn)
           
         losses = []
 
         for i in range(200):
           for graphs, targs in loader:
-                  #print("GRAPHS---> ",graphs)
-                  #print("TARGS---> ",targs)
-                  #print("TARGS SHAPE ---> ",targs.shape)
                   optim.zero_grad()
-                  preds = model(graphs).squeeze() #to bring exact same dim as targets
-                  #print("PREDS----> ",preds)
-                  #print("PREDS SHAPE ---> ",preds.shape)
+                  preds = model(graphs).squeeze()
                   loss = criterion(preds,targs)
                   loss.backward()
                   optim.step()
           losses.append(loss.item())
           if(print_logs): print('Epoch {} Loss {}'.format(i,loss.item()))
-          #Early stopping
           if(loss.item()<1e-8): return losses
 
         return losses
@@ -402,14 +351,10 @@ class GA_DLP_Optimizer(BaseOptimizer):
         pool = joblib.Parallel(n_jobs=self.n_jobs)
         
         if self.smi_file is not None:
-            # Exploitation run
             starting_population = self.all_smiles[:config["population_size"]]
         else:
-            # Exploration run
             starting_population = np.random.choice(self.all_smiles, config["population_size"])
 
-        # select initial population
-        # population_smiles = heapq.nlargest(config["population_size"], starting_population, key=oracle)
         population_smiles = starting_population
         self.oracle.assign_population(population_smiles)
         population_mol = [Chem.MolFromSmiles(s) for s in population_smiles]
@@ -419,29 +364,15 @@ class GA_DLP_Optimizer(BaseOptimizer):
         max_score = max(population_scores)
 
         print('----------------------Training model with sample population-----------------')
-        
-        #initialization of models
+
         criterion = nn.MSELoss()
         model = Discriminator(self.device)
-        #model = GCN(self.device)
         optim = Adam(model.parameters())
 
         losses = self.train(population_mol, model, criterion, optim, print_logs=False)
 
         print('----------------------Training completed-----------------')
         
-        #print("Losses = ", losses)
-        '''
-        plt.figure(figsize=(10, 5))
-        plt.title('Losses Over Iterations')
-        plt.xlabel('Iteration')
-        plt.ylabel('Loss')
-        plt.plot(losses, marker='o', linestyle='-', color='blue')
-        plt.grid(True)
-        plt.savefig('plot_inital_train.png')
-
-        plt.show()
-        '''
 
         #register forward and backward hooks for graph embedding and grad
         outputs = {}
@@ -488,7 +419,6 @@ class GA_DLP_Optimizer(BaseOptimizer):
                         children_space = co.get_co_space(parent_a, parent_b)
                         sample_space_map[parent_smiles] = children_space
                     else:
-                        #print("sample space found in dict")
                         children_space = sample_space_map[parent_smiles]
                 children_graphs = [mol_to_dgl(s).to(self.device) for s in children_space]
                 a = len(children_graphs)
@@ -545,8 +475,6 @@ class GA_DLP_Optimizer(BaseOptimizer):
               training_increment += 100
               if max(train_mol_scores) > max_score:
                 max_score = max(train_mol_scores)
-              #mols_to_train = []
-              #train_mol_scores = []
               num_trained +=1
             if oracle_call == 0:
                 x = self.log_intermediate(finish=False)
@@ -570,31 +498,4 @@ class GA_DLP_Optimizer(BaseOptimizer):
                 print_results_oracle(t,a,b,x)
                 print('Final, abort ...... ')
                 break
-            #if self.finish:
-            #    print(num_trained)
-            #    print("----Final Statistics----")
-            #    num_mol = '10000'
-            #    oracletype = str(self.args.oracles[0])
-            #    population_scores = [self.oracle(Chem.MolToSmiles(mol)) for mol in population_mol]
-            #    # Get top 5 indices of population molecule image and also score
-            #    print(self.seed)
-            #    top_indices = np.argsort(population_scores)[-5:]
-            #    filepath = f"C:/Users/chris/molecule_benchmark/mol_opt/main/dlp_graph_ga/results/images/Experiment/{oracletype}/Seed{self.seed}/"
-            #    os.makedirs(filepath, exist_ok=True) 
-            #    with open(filepath+f'{num_mol}.txt', 'w') as f:
-            #        for idx,i in enumerate(top_indices):
-            #            f.write(f'{num_mol}{idx + 1} {oracletype}:' + str(population_scores[i]) + '\n')
-            #            img = Draw.MolToImage(population_mol[i])
-            #           file_name = f'{num_mol}_{oracletype}_{idx + 1}.png'
-            #            img.save(os.path.join(filepath, file_name))
-            #        
-            #    results = self.log_intermediate(finish=True)
-            #    with open(filepath + 'DLP_GA.txt', 'w') as f:
-            #       f.write(str(results))
-            #    with open(filepath + 'SMILES_GA.txt', 'w') as f:
-            #       f.write('')    
-            #    with open(filepath + 'GRAPH_GA.txt', 'w') as f:  
-            #       f.write('')
-
-            #    break
-               
+            
