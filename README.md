@@ -9,6 +9,3 @@ To run the code:-
 
 ## NOTE: 
 we haven't tested it out in wandb. Therefore would not recommend to run it for this method.
-
-## Paper:
-https://arxiv.org/pdf/2502.09860
